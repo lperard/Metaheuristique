@@ -89,23 +89,32 @@ Deux solveurs très simples basés sur une représentation par numéro de job. L
 
 ## À faire : manipulation de représentations
 
-Ouvrez la méthode `EncodingTests.testJobNumbers()`. 
+Ouvrez la méthode `DebuggingMain.main()`. 
 
- - Pour les deux solutions en représentation par numéro de job, calculez (à la main) les dates de début de chaque tâche
- - implémentez la méthode `toString()` de la classe `Schedule` pour afficher les dates dé début de chaque tâche dans un schedule.
+ - Pour la solutions en représentation par numéro de job donnée, calculez (à la main) les dates de début de chaque tâche
+ - implémentez la méthode `toString()` de la classe `Schedule` pour afficher les dates de début de chaque tâche dans un schedule.
  - Vérifiez que ceci correspond bien aux calculs que vous aviez fait à la main.
  
 Création d'une nouvelle representation par ordre de passage sur les ressources : 
 
-- Créer une classe `jobshop.encodings.ResourceOrder` qui contient la représentation par ordre de passage sur ressources vue dans les exercices.
-- Pour cette classe, implémentez la méthode `toSchedule()` qui permet d'extraire une représentation directe.  
-- Ajouter des tests dans `src/test/java/jobshop` permettant de vérifier que vos méthodes fonctionnent bien pour les exemples traités en cours (instance `aaa1`).
-Vous pouvez pour cela vous inspirer et ajouter des cas de test à `EncodingTests`. 
+- Créer une classe `jobshop.encodings.ResourceOrder` qui contient la représentation par ordre de passage sur ressources vue dans les exercices (section 3.2). Il s'agit ici d'une reprsentation sous forme de matrice où chaque ligne correspond à une machine, et sur cette ligne se trouvent les tâches qui s'exécutent dessus dans leur ordre de passage. Pour la representation d'une tâche dans la matrice, vous pouvez utiliser la classe `jobshop.encodings.Task` qui vous est fournie.
+
+- Pour cette classe, implémentez la méthode `toSchedule()` qui permet d'extraire une représentation directe. 
+Pour l'implémentation de cette méthode `toSchedule()`, il vous faut construire un schedule qui associe à chaque tâche une date de début (vous pouvez regardez l'implémentation pour `JobNums` pour en comprendre le principe).
+Pour construire ce schedule il faudra que vous mainteniez une liste des tâches qui ont été schédulé. Cette liste est initialement vide.
+À chaque itération de l'algorithme, on identifie les tâches executables. Une tâche est executable si 
+
+     - son prédecesseur sur le job a été schedulé (si c'est la tache (1, 3), il faut que les tâches (1,1) et (1,2) aient été schédulée)
+     - son prédecesseur sur la ressource a été schedulé (l'ordre sur passage sur les ressources est précisement ce qui vous est donné par cette représentation).
+ 
+- Ajouter des tests dans `src/test/java/jobshop` permettant de vérifier que vos méthodes fonctionnent bien pour les exemples traités en cours (instance `aaa1`). Vous pouvez pour cela vous inspirer et ajouter des cas de test à `EncodingTests`. 
+
+
 
 Changement de représentation : 
 
 - pour les deux représentations `ResourceOrder` et `JobNums`, créez des méthodes permettant de créer cette représentation depuis un `Schedule`.
-- utilisez là pour tester la conversion de `ResourceOrder` vers `JobNums` et vice-versa.
+- utilisez la pour tester la conversion de `ResourceOrder` vers `JobNums` et vice-versa.
 
 
 # Heuristiques gloutonne

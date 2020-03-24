@@ -26,8 +26,6 @@ public class EncodingTests {
         enc.jobs[enc.nextToSet++] = 1;
 
         Schedule sched = enc.toSchedule();
-        // TODO: make it print something meaningful
-        // by implementing the toString() method
         System.out.println(sched);
         assert sched.isValid();
         assert sched.makespan() == 12;

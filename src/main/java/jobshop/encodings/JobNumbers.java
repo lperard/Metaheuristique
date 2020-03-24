@@ -49,4 +49,9 @@ public class JobNumbers extends Encoding {
 
         return new Schedule(instance, startTimes);
     }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(Arrays.copyOfRange(jobs,0, nextToSet));
+    }
 }

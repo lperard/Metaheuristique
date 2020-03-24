@@ -60,6 +60,16 @@ public class Schedule {
         return max;
     }
 
+    public String toString () {
+        String toPrint = "";
+        for (int i = 0; i < this.pb.numJobs; i++) {
+            for (int j = 0; j < this.pb.numTasks; j++) {
+                toPrint += "Job "+ i + ", Tache "+ j + ": " +this.times[i][j] + "\n";
+            }
+        }
+        return toPrint;
+    }
+
     public Schedule copy() {
         return new Schedule(this.pb, this.times);
     }

@@ -28,6 +28,7 @@ public class Instance {
         return machines[job][task];
     }
 
+    /** among the tasks of the given job, returns the task index that uses the given machine. */
     public int task_with_machine(int job, int wanted_machine) {
         for(int task = 0 ; task < numTasks ; task++) {
             if(machine(job, task) == wanted_machine)

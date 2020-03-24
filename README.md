@@ -81,7 +81,18 @@ This notably ensures that sources have been recompiled whenever necessary.
 
 ## IDE Support
 
-Most IDEs should provide support for importing gradle projects.
+Most IDEs should provide support for importing gradle projects. However, our experience has been best with IntelliJ so far and we would recommend it.
 
-- **Eclipse**: https://www.vogella.com/tutorials/EclipseGradle/article.html
-- **IntelliJ**: https://www.jetbrains.com/help/idea/gradle.html#gradle_import_project_start
+#### IntelliJ
+
+IntelliJ has worked best, with out of the box support for the import of gradle projets:
+https://www.jetbrains.com/help/idea/gradle.html#gradle_import_project_start
+
+
+#### Eclipse
+
+Most technical problems have been related to the use of Eclipse so we don't recommend using it unless you have a good reason to.
+We have however configured gradle to allow generating an eclipse configuration like so : 
+```
+./gradlew eclipseClean eclipse
+```
