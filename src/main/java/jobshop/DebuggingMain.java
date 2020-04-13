@@ -1,6 +1,8 @@
 package jobshop;
 
 import jobshop.encodings.JobNumbers;
+import jobshop.encodings.ResourceOrder;
+import jobshop.encodings.Task;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -24,6 +26,16 @@ public class DebuggingMain {
             enc.jobs[enc.nextToSet++] = 0;
             enc.jobs[enc.nextToSet++] = 1;
 
+            ResourceOrder ro = new ResourceOrder(instance);
+            ro.rep[0][0]=new Task(0,0);
+            ro.rep[0][1]=new Task(1,1);
+            ro.rep[1][0]=new Task(1,0);
+            ro.rep[1][1]=new Task(0,1);
+            ro.rep[2][0]=new Task(0,2);
+            ro.rep[2][1]=new Task(1,2);
+
+
+            System.out.println("\nENCODING: " + ro.toString());
             System.out.println("\nENCODING: " + enc);
 
             Schedule sched = enc.toSchedule();
