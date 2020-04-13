@@ -2,11 +2,20 @@ package jobshop;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BestKnownResult {
 
     public static boolean isKnown(String instanceName) {
         return bests.containsKey(instanceName);
+    }
+
+    public static List<String> instancesMatching(String namePrefix) {
+        return Arrays.stream(instances)
+                .filter(i -> i.startsWith(namePrefix))
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public static int of(String instanceName) {
@@ -20,7 +29,7 @@ public class BestKnownResult {
     static String[] instances;
     static {
         bests = new HashMap<>();
-        bests.put("aaa1", 10);
+        bests.put("aaa1", 11);
         bests.put("abz5", 1234);
         bests.put("abz6", 943);
         bests.put("abz7", 656);

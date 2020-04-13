@@ -1,7 +1,10 @@
 package jobshop;
 
 
-import java.util.Arrays;
+import jobshop.encodings.Task;
+
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class Schedule {
     public final Instance pb;
@@ -60,17 +63,73 @@ public class Schedule {
         return max;
     }
 
-    public String toString () {
-        String toPrint = "";
-        for (int i = 0; i < this.pb.numJobs; i++) {
-            for (int j = 0; j < this.pb.numTasks; j++) {
-                toPrint += "Job "+ i + ", Tache "+ j + ": " +this.times[i][j] + "\n";
-            }
-        }
-        return toPrint;
+    public int startTime(Task task) {
+        return startTime(task.job, task.task);
     }
 
-    public Schedule copy() {
-        return new Schedule(this.pb, this.times);
+    public int endTime(Task task) {
+        return startTime(task) + pb.duration(task.job, task.task);
+    }
+
+    public boolean isCriticalPath(List<Task> path) {
+        if(startTime(path.get(0)) != 0) {
+            return false;
+        }
+        if(endTime(path.get(path.size()-1)) != makespan()) {
+            return false;
+        }
+        for(int i=0 ; i<path.size()-1 ; i++) {
+            if(endTime(path.get(i)) != startTime(path.get(i+1)))
+                return false;
+        }
+        return true;
+    }
+
+    public List<Task> criticalPath() {
+        // select task with greatest end time
+        Task ldd = IntStream.range(0, pb.numJobs)
+                .mapToObj(j -> new Task(j, pb.numTasks-1))
+                .max(Comparator.comparing(this::endTime))
+                .get();
+        assert endTime(ldd) == makespan();
+
+        // list that will contain the critical path.
+        // we construct it from the end, starting with the
+        // task that finishes last
+        LinkedList<Task> path = new LinkedList<>();
+        path.add(0,ldd);
+
+        // keep adding tasks to the path until the first task in the path
+        // starts a time 0
+        while(startTime(path.getFirst()) != 0) {
+            Task cur = path.getFirst();
+            int machine = pb.machine(cur.job, cur.task);
+
+            // will contain the task that was delaying the start
+            // of our current task
+            Optional<Task> latestPredecessor = Optional.empty();
+
+            if(cur.task > 0) {
+                // our current task has a predecessor on the job
+                Task predOnJob = new Task(cur.job, cur.task -1);
+
+                // if it was the delaying task, save it to predecessor
+                if(endTime(predOnJob) == startTime(cur))
+                    latestPredecessor = Optional.of(predOnJob);
+            }
+            if(!latestPredecessor.isPresent()) {
+                // no latest predecessor found yet, look among tasks executing on the same machine
+                latestPredecessor = IntStream.range(0, pb.numJobs)
+                        .mapToObj(j -> new Task(j, pb.task_with_machine(j, machine)))
+                        .filter(t -> endTime(t) == startTime(cur))
+                        .findFirst();
+            }
+            // at this point we should have identified a latest predecessor, either on the job or on the machine
+            assert latestPredecessor.isPresent() && endTime(latestPredecessor.get()) == startTime(cur);
+            // insert predecessor at the beginning of the path
+            path.add(0, latestPredecessor.get());
+        }
+        assert isCriticalPath(path);
+        return path;
     }
 }
