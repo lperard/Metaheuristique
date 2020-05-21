@@ -1,7 +1,9 @@
 package jobshop.encodings;
 
 import java.util.Objects;
-
+import java.util.*;
+import java.lang.*;
+import java.io.*;
 /** Represents a task (job,task) of an jobshop problem.
  *
  * Example : (2, 3) repesents the fourth task of the third job. (remeber that we tart counting at 0)

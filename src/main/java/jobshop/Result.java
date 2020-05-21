@@ -17,6 +17,8 @@ public class Result {
     public final Instance instance;
     public final Schedule schedule;
     public final ExitCause cause;
-
+    public Schedule getSchedule(){
+        return this.schedule;
+    }
 
 }
