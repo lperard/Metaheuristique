@@ -24,7 +24,7 @@ public class TabooSolver extends DescentSolver {
 
     public Result solve(Instance instance, long deadline) {
         GreedySolver gs = new GreedySolver(GreedySolver.Type.EST_LRPT);
-        ResourceOrder solution = new ResourceOrder(gs.solve(instance, System.currentTimeMillis() + 10).schedule);
+        ResourceOrder solution = new ResourceOrder(gs.solve(instance, 1000).schedule);
 
         this.taille = instance.numJobs * instance.numTasks;
         int[][] tableauTaboo = new int[taille][taille];
@@ -53,10 +53,7 @@ public class TabooSolver extends DescentSolver {
                     s.applyOn(current);
                     Schedule sched = current.toSchedule();
                     if(sched == null){
-                        System.out.println("wtf");
-                        System.out.println("VALID: " + sched.isValid());
-                        System.out.println(current);
-
+                        break;
                     }
                         int durationOfSwapped = sched.makespan();
                         if (durationOfSwapped <= bestNeighborMakespan){
