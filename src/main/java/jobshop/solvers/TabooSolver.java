@@ -4,6 +4,7 @@ import jobshop.Instance;
 import jobshop.Result;
 import jobshop.Schedule;
 import jobshop.encodings.ResourceOrder;
+import jobshop.encodings.Task;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,10 +35,10 @@ public class TabooSolver extends DescentSolver {
 
         ResourceOrder bestNeighbor = solution.copy();
         while(compteur < maxIter){
+            compteur++;
 
             int bestNeighborMakespan = Integer.MAX_VALUE;
             int bestSolutionMakeSpan = solution.toSchedule().makespan();
-            compteur++;
 
             List<Block> blocks = blocksOfCriticalPath(bestNeighbor);
             List<Swap> neighborsOfBlock = new ArrayList<>();
@@ -45,29 +46,31 @@ public class TabooSolver extends DescentSolver {
                 List<Swap> n = neighbors(b);
                 neighborsOfBlock.addAll(n);
             }
-
             Swap bestSwap = null;
             for(Swap s : neighborsOfBlock){
-                if(isTaboo(tableauTaboo, s, compteur)){
+                if(isTaboo(tableauTaboo, s, bestNeighbor, compteur)){
                     ResourceOrder current = bestNeighbor.copy();
                     s.applyOn(current);
                     Schedule sched = current.toSchedule();
+                    if(sched == null){
+                        System.out.println("wtf");
+                        System.out.println("VALID: " + sched.isValid());
+                        System.out.println(current);
+
+                    }
                         int durationOfSwapped = sched.makespan();
                         if (durationOfSwapped <= bestNeighborMakespan){
-                            //System.out.println("Found a better local solution : " + durationOfSwapped + " , instead of : " + bestNeighborMakespan);
                             bestSwap = s;
                             bestNeighborMakespan = durationOfSwapped;
                             bestNeighbor = current.copy();
                             if (durationOfSwapped <= bestSolutionMakeSpan){
-                                //System.out.println("Found a better global solution : " + durationOfSwapped + " , instead of : " + bestSolutionMakeSpan);
                                 solution = current.copy();
                             }
                         }
                 }
             }
-            //System.out.println(compteur+" : another taboo round, global : " + bestSolutionMakeSpan + " , local : " + bestNeighborMakespan);
             if(bestSwap!=null){
-                addTabooSwaps(tableauTaboo, neighborsOfBlock, bestSwap, compteur);
+                addTabooSwaps(tableauTaboo, bestSwap, bestNeighbor, compteur);
             }
 
 
@@ -75,26 +78,17 @@ public class TabooSolver extends DescentSolver {
         return new Result(instance, solution.toSchedule(), Result.ExitCause.Timeout);
     }
 
-    private void addTabooSwaps (int[][] tabooArray, List<Swap> swaps, Swap s, int compteur){
-        if (swaps.size() > 1){
-            for (Swap considered : swaps) {
-                if (s != null){
-                    s.toString();
-                    if (!considered.equals(s)){
-                        int cell1 = s.machine * s.t1;
-                        int cell2 = s.machine * s.t2;
-                        tabooArray[cell1][cell2] = tabooArray[cell1][cell2] + compteur + dureeTaboo;
-                    }
-                }
-            }
-        }
+    private void addTabooSwaps (int[][] tabooArray, Swap s, ResourceOrder current, int compteur){
+        Task task_1 = current.tasksByMachine[s.machine][s.t1];
+        Task task_2 = current.tasksByMachine[s.machine][s.t2];
+        tabooArray[task_1.job * current.instance.numTasks + task_1.task][task_2.job * current.instance.numTasks + task_2.task] = compteur + dureeTaboo;
     }
 
     //returns false if the move can't be done
-    private Boolean isTaboo (int[][] tabooArray, Swap s, int compteur) {
-        int cell1 = s.machine * s.t1;
-        int cell2 = s.machine * s.t2;
-        if(compteur > tabooArray[cell1][cell2]){
+    private Boolean isTaboo (int[][] tabooArray, Swap s, ResourceOrder current, int compteur) {
+        Task task_1 = current.tasksByMachine[s.machine][s.t1];
+        Task task_2 = current.tasksByMachine[s.machine][s.t2];
+        if(compteur > tabooArray[task_1.job * current.instance.numTasks + task_1.task][task_2.job * current.instance.numTasks + task_2.task]){
             //System.out.println("Not taboo");
             return true;
         }

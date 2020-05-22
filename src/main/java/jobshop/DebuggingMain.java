@@ -3,6 +3,7 @@ package jobshop;
 import jobshop.solvers.GreedySolver;
 import jobshop.solvers.DescentSolver;
 import jobshop.solvers.TabooSolver;
+import sun.tools.jconsole.Tab;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -12,7 +13,7 @@ public class DebuggingMain {
     public static void main(String[] args) {
         try {
             // load the aaa1 instance
-            Instance instance = Instance.fromFile(Paths.get("instances/ft20"));
+            Instance instance = Instance.fromFile(Paths.get("instances/ft10"));
 
             // construit une solution dans la représentation par
             // numéro de jobs : [0 1 1 0 0 1]
@@ -57,12 +58,27 @@ public class DebuggingMain {
             System.out.println("");
 
 
-            System.out.println("");
+            /*System.out.println("");
             Result resTaboo = new TabooSolver(10000,1).solve(instance, Long.MAX_VALUE);
             Schedule schedTaboo = resTaboo.getSchedule();
             System.out.println("Solved using Taboo Solver");
             System.out.println("VALID: " + schedTaboo.isValid());
-            System.out.println("MAKESPAN: " + schedTaboo.makespan());
+            System.out.println("MAKESPAN: " + schedTaboo.makespan());*/
+
+            int[] column = {1,2,5,10,50,100};
+            int[] row = {10,50,100,200,500,1000};
+            double[][] resultat = new double[row.length][column.length];
+
+            for(int i = 0; i < row.length; i++){
+                for(int j = 0; j < column.length; j++){
+                    Result result = new TabooSolver(row[i], column[j]).solve(instance, 10000);
+                    Schedule schedCase = result.getSchedule();
+                    int ms = schedCase.makespan();
+                    resultat[i][j] = ms;
+                    System.out.println("Case " + i + " " + j + " = " + resultat[i][j]);
+                }
+            }
+
 
 
 

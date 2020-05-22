@@ -6,10 +6,6 @@ import jobshop.Solver;
 import jobshop.Schedule;
 import jobshop.encodings.ResourceOrder;
 import jobshop.encodings.Task;
-import jobshop.encodings.TaskSortable;
-
-
-
 import java.util.Arrays;
 
 public class GreedySolver implements Solver {
@@ -29,18 +25,19 @@ public class GreedySolver implements Solver {
 
         //Pour chaque machine, donne le moment où elle est disponible
         int[] machineAvailable = new int[instance.numMachines];
-        Arrays.fill(machineAvailable,0);
         //Pour chaque job, donne le moment où la tâche d'avant se termine
         int[] jobTime = new int[instance.numJobs];
-        Arrays.fill(jobTime,0);
         //Tableau avec le numéro de la prochaine tâche pour chaque job
         int[] realisable = new int[instance.numJobs];
-        Arrays.fill(realisable,0);
 
         while(!Done(instance, realisable)){
             Task found = new Task(-1,-1);
             if (type == Type.SPT) {
                 found = findShortest(instance, realisable, machineAvailable, jobTime);
+            }
+            else if (type == Type.EST_SPT) {
+                Task[] selected = makeEST(instance, realisable, machineAvailable, jobTime);
+                found = findActualShortest(instance, selected);
             }
             else if (type == Type.LRPT) {
                 Task[] tasks = new Task[instance.numJobs];
@@ -48,9 +45,6 @@ public class GreedySolver implements Solver {
                     tasks[i] = new Task(i,realisable[i]);
                 }
                 found = longestJobFromList(instance, tasks, realisable);
-            }
-            else if (type == Type.EST_SPT) {
-                found = findActualShortest(instance, realisable, machineAvailable, jobTime);
             }
             else if (type == Type.EST_LRPT) {
                 Task[] tasks = makeEST(instance, realisable, machineAvailable, jobTime);
@@ -72,7 +66,7 @@ public class GreedySolver implements Solver {
             //la prochaine tâche du job est faisable après que cette tâche se soit terminée
             jobTime[found.job] = endTaskTime;
         }
-        this.res=sol;
+        this.res = sol;
         Schedule greedy = sol.toSchedule();
 
         return new Result(instance, greedy, Result.ExitCause.Timeout);
@@ -136,16 +130,7 @@ public class GreedySolver implements Solver {
         return longestJob;
     }*/
 
-    private Task findActualShortest (Instance instance, int[] realisable, int[] machineAvailable, int[] jobTime) {
-        Task[] selected = new Task[instance.numJobs];
-        if (this.type == Type.EST_SPT) {
-            selected = makeEST(instance, realisable, machineAvailable, jobTime);
-        }
-        else if (this.type == Type.SPT) {
-            for (int job = 0; job < instance.numJobs; job++) {
-                selected[job] = new Task(job, realisable[job]);
-            }
-        }
+    private Task findActualShortest (Instance instance, Task[] selected) {
         Task shortest = new Task(-1,-1);
         int shortestDuration = Integer.MAX_VALUE;
         for (int job = 0; job < instance.numJobs; job++) {
@@ -195,7 +180,6 @@ public class GreedySolver implements Solver {
             if(nextTask[job] != instance.numTasks) {
                 //le moment de démarrage de cette tâche est le max entre le moment de dispo de la machine et de la fin de la tâche précédente
                 int startingTimeTask = Math.max(machineAvailable[instance.machine(job, nextTask[job])], jobTime[job]);
-
                 if (startingTimeTask <= lowestStartingTime){
                     //System.out.println("Found an earlier starting task : " + startingTimeTask +", instead of :" + lowestStartingTime);
                     if ( (instance.duration(job, nextTask[job]) < shortestDuration)) {

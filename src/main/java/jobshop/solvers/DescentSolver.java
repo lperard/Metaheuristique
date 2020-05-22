@@ -106,21 +106,15 @@ public class DescentSolver implements Solver {
         Result res = gs.solve(instance, 10000);
         ResourceOrder solution = new ResourceOrder(res.schedule);
 
-        int foundMakeSpan = solution.toSchedule().makespan();
-
-        boolean foundBetter = false;
+        boolean foundBetter;
         //Tant que l'on trouve un voisin avec un meilleur makespan
         do {
             foundBetter = false;
-
             //A chaque début de boucle, on sauvegarde le meilleur actuel et on récupére sa durée
             ResourceOrder bestSolution = solution.copy();
             int bestSolutionMakeSpan = bestSolution.toSchedule().makespan();
-
-            //System.out.println("Going for a round, found makespan : " + foundMakeSpan + " , best make span : " + bestSolutionMakeSpan);
             //On trouve tout les blocs de la situation actuelle
             List<Block> blocks = blocksOfCriticalPath(bestSolution);
-            //System.out.println("Found " + blocks.size() + " blocks");
             //Sur tous ces blocs, on génére les voisins
             List<Swap> neighborsOfBlock = new ArrayList<>();
             for (Block b : blocks) {
@@ -135,19 +129,18 @@ public class DescentSolver implements Solver {
                 ResourceOrder current = bestSolution.copy();
                 s.applyOn(current);
                 int durationOfSwapped = current.toSchedule().makespan();
-                //System.out.println("New duration found : " + durationOfSwapped + " , comparing to " + bestSolutionMakeSpan);
                 //Si on a trouvé une meilleure solution
                 if (durationOfSwapped < bestSolutionMakeSpan){
-                    //System.out.println("Found a better solution, which is " + durationOfSwapped +" long, instead of " + bestSolutionMakeSpan);
                     neighbormakespan = durationOfSwapped;
                     bestSolution = current.copy();
                     foundLocalBetter = true;
                 }
             }
+            //Si on a trouvé mieux, et que cette solution est meilleure que le minimum global actuel
             if(foundLocalBetter && (neighbormakespan < bestSolutionMakeSpan)){
                 solution = bestSolution.copy();
-                //System.out.println("We found better");
                 foundBetter = true;
+                //System.out.println("We found better");
             }
         } while (foundBetter) ;
 
@@ -159,8 +152,6 @@ public class DescentSolver implements Solver {
     public static List<Block> blocksOfCriticalPath(ResourceOrder order) {
         Schedule sched = order.toSchedule() ;
         List<Task> path = sched.criticalPath() ;
-    	/*for (Task t: path)
-    		System.out.println("blocksofcriticalpath "+path.indexOf(t)+" "+t);*/
         List<Block> blocks = new ArrayList<DescentSolver.Block>();
 
         int currentMachine = order.instance.machine(path.get(0)) ;
@@ -168,7 +159,6 @@ public class DescentSolver implements Solver {
         for (Task currentTask : path) {
             int index = path.indexOf(currentTask) ;
             if (order.instance.machine(currentTask) != currentMachine || index == path.size()-1) {
-                //System.out.println("premier if");
                 int endCurrentBlock ;
                 if (index == path.size()-1) {
                     endCurrentBlock = index ;
@@ -180,63 +170,14 @@ public class DescentSolver implements Solver {
                 }
 
                 if (endCurrentBlock > startCurrentBlock) {
-                    //System.out.println("if");
-                    //System.out.println("blocksofcriticalpath "+path.indexOf(currentTask)+"new block start "+startCurrentBlock+" end "+endCurrentBlock);
-
                     List<Task> taskOfMachine = Arrays.asList(order.tasksByMachine[currentMachine]) ;
                     blocks.add(new Block(currentMachine, taskOfMachine.indexOf(path.get(startCurrentBlock)), taskOfMachine.indexOf(path.get(endCurrentBlock)))) ;
                 }
                 startCurrentBlock = index;
-                //System.out.println(startCurrentBlock);
                 currentMachine = order.instance.machine(currentTask) ;
             }
         }
-    	/*for (Block b : blocks) {
-    		System.out.println("blocksofcriticalpath "+b);
-    	}*/
         return blocks;
-        /*List<Block> blocks = new ArrayList();
-        Schedule sched = order.toSchedule();
-        List<Task> tasks = sched.criticalPath();
-        //System.out.println("Printing critical path " + tasks.toString());
-
-        Task beginBlock = tasks.get(0);
-        Task endBlock = null;
-
-        int machineUsed = order.instance.machine(beginBlock);
-        int beginIndex = findIndex(order, beginBlock, machineUsed);
-        int endIndex = -1;
-
-        //on parcours toutes les tâches du chemin critique
-        for(Task t : tasks){
-            //si on est toujours dans le même bloc
-            if(machineUsed == order.instance.machine(t)) {
-                if (t != beginBlock) {
-                    endBlock = t;
-                    endIndex = findIndex(order, t, machineUsed);
-                    //System.out.println("Block getting longer");
-                }
-            }
-            else {
-                //si le bloc a plus d'une tâche
-                if(endIndex - beginIndex > 0) {
-                    Block toBeAdded = new Block(machineUsed, beginIndex, endIndex);
-                    blocks.add(toBeAdded);
-                    //System.out.println("End of a block");
-                }
-                //System.out.println("On change de machine");
-                machineUsed = order.instance.machine(t);
-                beginBlock = t;
-                //System.out.println("Searching the index for a task using :" +  machineUsed);
-                beginIndex = findIndex(order, t, machineUsed);
-            }
-        }
-        if (endIndex - beginIndex > 1){
-            blocks.add(new Block(machineUsed, beginIndex, endIndex));
-        }
-        //System.out.println("Returning blocks : " + blocks);
-        return blocks;*/
-        //throw new UnsupportedOperationException();
     }
 
 
